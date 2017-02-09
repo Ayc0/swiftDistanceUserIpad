@@ -15,11 +15,33 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        personPic.image = UIImage(named: "face-8")
+        personPic.image = UIImage(named: "djou-100")
 
         detect()
     }
     
+    func CGPointDistanceSquared(from: CGPoint, to: CGPoint) -> CGFloat {
+        return (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y);
+    }
+    
+    func CGPointDistance(from: CGPoint, to: CGPoint) -> CGFloat {
+        return sqrt(CGPointDistanceSquared(from: from, to: to));
+    }
+    
+    func plotEye(eyePosition: CGPoint, offsetX: CGFloat, offsetY: CGFloat, transform: CGAffineTransform, scale: CGFloat) {
+        let eyeSize = CGSize(width: 5, height: 5)
+        var eyeBounds = CGRect(x: eyePosition.x, y: eyePosition.y, width: eyeSize.width, height: eyeSize.height).applying(transform)
+        
+        eyeBounds = eyeBounds.applying(CGAffineTransform(scaleX: scale, y: scale))
+        eyeBounds.origin.x += offsetX
+        eyeBounds.origin.y += offsetY
+        
+        let eyeBox = UIView(frame: eyeBounds)
+        eyeBox.layer.borderWidth = 3
+        eyeBox.layer.borderColor = UIColor.red.cgColor
+        eyeBox.backgroundColor = UIColor.clear
+        personPic.addSubview(eyeBox)
+    }
     
     func detect() {
         
@@ -60,39 +82,16 @@ class ViewController: UIViewController {
             faceBox.backgroundColor = UIColor.clear
             personPic.addSubview(faceBox)
             
-            let eyeSize = CGSize(width: 5, height: 5)
-            
-            if face.hasLeftEyePosition {
+            if face.hasLeftEyePosition && face.hasRightEyePosition {
                 print("Left eye bounds are \(face.leftEyePosition)")
-            }
-            
-            var leftEyeBounds = CGRect(x: face.leftEyePosition.x, y: face.leftEyePosition.y, width: eyeSize.width, height: eyeSize.height).applying(transform)
-            
-            leftEyeBounds = leftEyeBounds.applying(CGAffineTransform(scaleX: scale, y: scale))
-            leftEyeBounds.origin.x += offsetX
-            leftEyeBounds.origin.y += offsetY
-            
-            let leftEyeBox = UIView(frame: leftEyeBounds)
-            leftEyeBox.layer.borderWidth = 3
-            leftEyeBox.layer.borderColor = UIColor.red.cgColor
-            leftEyeBox.backgroundColor = UIColor.clear
-            personPic.addSubview(leftEyeBox)
-            
-            if face.hasRightEyePosition {
+                plotEye(eyePosition: face.leftEyePosition, offsetX: offsetX, offsetY: offsetY, transform: transform, scale: scale)
+                
                 print("Right eye bounds are \(face.rightEyePosition)")
+                plotEye(eyePosition: face.rightEyePosition, offsetX: offsetX, offsetY: offsetY, transform: transform, scale: scale)
+                
+                let distanceEyeToEye = CGPointDistance(from: face.leftEyePosition, to: face.rightEyePosition)
+                print("The eye to eye distance is \(distanceEyeToEye)")
             }
-            
-            var rightEyeBounds = CGRect(x: face.rightEyePosition.x, y: face.rightEyePosition.y, width: eyeSize.width, height: eyeSize.height).applying(transform)
-            
-            rightEyeBounds = rightEyeBounds.applying(CGAffineTransform(scaleX: scale, y: scale))
-            rightEyeBounds.origin.x += offsetX
-            rightEyeBounds.origin.y += offsetY
-            
-            let rightEyeBox = UIView(frame: rightEyeBounds)
-            rightEyeBox.layer.borderWidth = 3
-            rightEyeBox.layer.borderColor = UIColor.red.cgColor
-            rightEyeBox.backgroundColor = UIColor.clear
-            personPic.addSubview(rightEyeBox)
         }
     }
     
